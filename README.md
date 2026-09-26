@@ -1,6 +1,6 @@
 # 定位接力 · 同事模拟测试
 
-新增：[打开自动接收版](https://location-relay-receive.beanlittlehey.chatgpt.site)。登录后生成朋友专用链接，对方确认发送位置，你的接收页会自动显示。当前仓库保留原来的人工回传测试工具。
+新增：[打开自动接收版](https://location-relay-receive.beanlittlehey.chatgpt.site)。无需登录，打开后生成朋友专用链接，对方确认发送位置，你的接收页会自动显示。当前仓库保留原来的人工回传测试工具。
 
 一个无需高德 Key、无需位置后台的静态网页：手机定位 → 复制短信回传 → 接收者查看并保存 → 跳转高德路线。
 
