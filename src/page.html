@@ -17,7 +17,7 @@
     <span class="pill">同事模拟测试</span>
   </header>
   <main>
-    <section class="intro"><p class="eyebrow">LOCATION RELAY</p><h1>位置记清楚，<br class="mobile-break">路线交给高德。</h1><p>定位后复制内容，回到原短信会话发送。接收者打开链接，即可查看位置并前往高德。</p></section>
+    <section class="intro"><p class="eyebrow">LOCATION RELAY</p><h1>位置记清楚，<br class="mobile-break">路线交给高德。</h1><p>朋友定位后，需把生成的位置链接发回给你。打开他发回的链接，即可查看并导航；只发送首页不会自动收到位置。</p></section>
     <noscript><div class="notice error">请允许浏览器运行 JavaScript 后使用定位功能。</div></noscript>
     <div id="environment-note" class="notice" hidden></div>
     <div id="storage-note" class="notice warning" hidden></div>
@@ -48,7 +48,7 @@
       </aside>
     </section>
     <section id="records-view" hidden aria-label="位置记录">
-      <div class="records-toolbar"><div><h2>本机位置记录</h2><p class="muted">记录保存在当前浏览器，可导出备份。</p></div><div class="inline-actions"><button id="export" class="button secondary">导出记录</button><button id="import" class="button secondary">导入记录</button><input type="file" id="import-file" accept=".json,application/json" hidden></div></div>
+      <div class="records-toolbar"><div><h2>本机位置记录</h2><p class="muted">这里只显示在此浏览器保存的记录。查看朋友位置：打开他发回的位置链接，点击“保存到本机”，再到这里查看。</p></div><div class="inline-actions"><button id="export" class="button secondary">导出记录</button><button id="import" class="button secondary">导入记录</button><input type="file" id="import-file" accept=".json,application/json" hidden></div></div>
       <p id="records-summary" class="helper"></p><div id="records-list" class="records-list"></div>
       <button id="clear-records" class="text-button danger" hidden>清空本机记录</button>
     </section>

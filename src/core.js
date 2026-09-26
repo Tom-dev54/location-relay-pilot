@@ -164,12 +164,12 @@
     var record = normalizeRecord(input);
     if (!record.position) fail('没有可导航的位置');
     var p = record.position;
-    var name = '测试 ' + record.testId + ' 的位置';
+    var name = '回传位置';
     var route = new URLSearchParams({ sourceApplication: 'loc119', dlat: String(p.lat), dlon: String(p.lon), dname: name, dev: p.crs === 'WGS84' ? '1' : '0', t: '0', m: '0' });
     var marker = new URLSearchParams({ position: p.lon + ',' + p.lat, name: name, coordinate: p.crs === 'WGS84' ? 'wgs84' : 'gaode', callnative: '0', src: 'loc119' });
     return {
-      android: 'amapuri://route/plan/?' + route.toString(),
-      ios: 'iosamap://path?' + route.toString(),
+      android: 'amapuri://route/plan/?' + route.toString().replace(/\+/g, '%20'),
+      ios: 'iosamap://path?' + route.toString().replace(/\+/g, '%20'),
       web: 'https://uri.amap.com/marker?' + marker.toString()
     };
   }
