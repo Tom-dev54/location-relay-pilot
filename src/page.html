@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#155b52">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23155b52'/%3E%3Cpath d='M12 28 28 12M12 12h16v16' fill='none' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="同事模拟使用的定位记录与高德路线跳转工具。无需高德Key。">
+  <title>定位接力 · 同事模拟测试</title>
+  <style>/* INLINE_STYLES */</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">↗</span><div><strong>定位接力</strong><span>记录位置，接力到达</span></div></div>
+    <span class="pill">同事模拟测试</span>
+  </header>
+  <main>
+    <section class="intro"><p class="eyebrow">LOCATION RELAY</p><h1>位置记清楚，<br class="mobile-break">路线交给高德。</h1><p>定位后复制内容，回到原短信会话发送。接收者打开链接，即可查看位置并前往高德。</p></section>
+    <noscript><div class="notice error">请允许浏览器运行 JavaScript 后使用定位功能。</div></noscript>
+    <div id="environment-note" class="notice" hidden></div>
+    <div id="storage-note" class="notice warning" hidden></div>
+    <div id="storage-recovery" class="inline-actions" hidden><button id="recover-storage" class="button secondary">导出原始存储</button><button id="reset-storage" class="button secondary">重置损坏的存储</button></div>
+    <section id="incoming-section" class="card incoming" hidden aria-labelledby="incoming-title">
+      <div class="section-heading"><div><p class="eyebrow">收到的位置</p><h2 id="incoming-title">先核对，再保存</h2></div><button id="close-incoming" class="text-button">收起</button></div>
+      <div id="incoming-content"></div>
+    </section>
+    <nav class="tabs" aria-label="功能切换"><button id="tab-locate" aria-current="page">定位与回传</button><button id="tab-records">位置记录 <span id="record-count">0</span></button></nav>
+    <section id="locate-view" class="workspace" aria-label="定位与回传">
+      <section class="card capture-card">
+        <div class="section-heading"><h2>本次定位</h2><span class="state-badge" id="session-state">准备就绪</span></div>
+        <div class="metric"><strong id="accuracy-value">—</strong><span>米</span></div><p class="metric-label">设备报告精度半径 <span>· 不是实测误差</span></p>
+        <div class="progress" aria-hidden="true"><span id="progress-fill"></span></div>
+        <div class="session-stats"><span>已用时 <b id="elapsed-value">0 秒</b></span><span>位置更新 <b id="fix-count">0 次</b></span></div>
+        <p id="session-message" class="session-message" role="status">选好场景，点击开始。请在安全位置保持手机静止。</p>
+        <div class="form-grid"><label>测试编号<input id="test-id" maxlength="48" autocomplete="off" spellcheck="false" placeholder="例如 T001"></label><label>设备备注 <span class="muted">选填</span><input id="device-label" maxlength="80" autocomplete="off" placeholder="例如 D1 · iPhone Safari"></label></div>
+        <fieldset id="scene-fieldset"><legend>所在场景</legend><div class="scene-grid">
+          <label><input type="radio" name="scene" value="室外开阔" checked><span>室外开阔</span></label><label><input type="radio" name="scene" value="楼宇之间"><span>楼宇之间</span></label><label><input type="radio" name="scene" value="室内靠窗"><span>室内靠窗</span></label><label><input type="radio" name="scene" value="室内深处"><span>室内深处</span></label>
+        </div></fieldset>
+        <div class="capture-actions"><button id="start" class="button primary">开始定位</button><button id="stop" class="button secondary" hidden>结束并记录</button></div>
+        <p class="helper">最多等待 60 秒；取得首个位置后继续观察 30 秒，总时长不超过 60 秒。结束时自动记录，包括失败。</p>
+        <div id="current-result" class="result-box" hidden></div>
+      </section>
+      <aside class="side-column">
+        <section class="card steps-card"><p class="eyebrow">三步完成接力</p><ol class="steps"><li><b>01</b><div><h3>在当前位置定位</h3><p>允许浏览器访问位置，等待本次测试结束。</p></div></li><li><b>02</b><div><h3>复制，回到短信发送</h3><p>把位置内容粘贴到原短信会话，确认发给对应同事。</p></div></li><li><b>03</b><div><h3>打开高德查看路线</h3><p>接收者点击“高德导航”，目的地自动带入，再确认开始导航。</p></div></li></ol></section>
+        <section class="note-card"><h3>位置能指路，入口还需确认</h3><p>采集的是这部手机的位置，不一定是现场或建筑入口。请结合门牌、建筑和地标核对。</p><p>本页不持续记录行驶轨迹。</p></section>
+      </aside>
+    </section>
+    <section id="records-view" hidden aria-label="位置记录">
+      <div class="records-toolbar"><div><h2>本机位置记录</h2><p class="muted">记录保存在当前浏览器，可导出备份。</p></div><div class="inline-actions"><button id="export" class="button secondary">导出记录</button><button id="import" class="button secondary">导入记录</button><input type="file" id="import-file" accept=".json,application/json" hidden></div></div>
+      <p id="records-summary" class="helper"></p><div id="records-list" class="records-list"></div>
+      <button id="clear-records" class="text-button danger" hidden>清空本机记录</button>
+    </section>
+    <footer><p>仅供同事模拟测试 · 无需高德 Key</p><p>分享链接包含位置，转发者可以查看。点击高德入口会将目标坐标提供给高德。清理浏览器数据会删除本机记录，请及时导出。</p></footer>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <dialog id="copy-dialog"><form method="dialog"><div class="section-heading"><h2>手动复制内容</h2><button class="text-button" value="close">关闭</button></div><p>浏览器未能自动复制。请长按下方文字全选、复制，再回到短信粘贴发送。</p><textarea id="copy-text" readonly rows="10" aria-label="待复制的回传内容"></textarea><button class="button primary" value="close">完成</button></form></dialog>
+  <script>/* INLINE_CORE */</script>
+  <script>/* INLINE_APP */</script>
+</body>
+</html>
