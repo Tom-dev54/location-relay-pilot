@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1790414911190,
+      "tag": "0000_eminent_crystal",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790419223833,
+      "tag": "0001_careless_spiral",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790438056477,
+      "tag": "0002_many_boom_boom",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790442291558,
+      "tag": "0003_unknown_lilandra",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790456863900,
+      "tag": "0004_neat_scourge",
+      "breakpoints": true
+    }
+  ]
+}

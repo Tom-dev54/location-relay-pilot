@@ -1,3 +1,5 @@
+> **当前完整版本：** 接收看板、自动发送、后台和地图源码见 [receiver-app](receiver-app/)。换电脑接力请先读 [接力说明](receiver-app/docs/接力说明.md)。下方保留早期静态试点页说明。
+
 # 定位接力 · 同事模拟测试
 
 新增：[打开自动接收版](https://location-relay-receive.beanlittlehey.chatgpt.site)。无需登录，打开后生成朋友专用链接，对方确认发送位置，你的接收页会自动显示。当前仓库保留原来的人工回传测试工具。

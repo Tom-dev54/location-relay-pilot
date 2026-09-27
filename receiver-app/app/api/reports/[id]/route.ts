@@ -1,0 +1,3 @@
+import {body,db,json,owner,safe} from '../../../../lib/relay-server';
+import {ApiError,keys} from '../../../../lib/relay-validation';
+export async function DELETE(req:Request,{params}:{params:Promise<{id:string}>}){return safe(async()=>{const uid=await owner(req);keys(await body(req),[]);const {id}=await params;const legacy=id.startsWith('legacy-');const result=await db().prepare(legacy?'DELETE FROM positions WHERE request_id=? AND request_id IN (SELECT id FROM invitations WHERE owner_id=?)':'DELETE FROM reports WHERE id=? AND request_id IN (SELECT id FROM invitations WHERE owner_id=?)').bind(legacy?id.slice(7):id,uid).run();if(!result.meta.changes)throw new ApiError('记录不存在或已删除',404);return json({deleted:true});});}
