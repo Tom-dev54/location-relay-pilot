@@ -64,9 +64,9 @@ export default function PublicBoard(){
  const currentKey=current?queryKey(current):'',currentMap=current?mappedFor(current):undefined,coordinateKey=currentMap?.coordinates?.join(',')||'';
  useEffect(()=>{
   if(!sdk||sdk!==map.current)return;
-  sdk.markers(records.filter(r=>providerFor(r)===provider&&mappedFor(r).coordinates).map(r=>({id:r.id,coordinates:mappedFor(r).coordinates!,title:mappedFor(r).place?.title||r.label})),select);
+  sdk.markers(records.filter(r=>providerFor(r)===provider&&mappedFor(r).coordinates).map(r=>({id:r.id,coordinates:mappedFor(r).coordinates!,title:mappedFor(r).place?.title||r.label,selected:r.id===selected})),select);
  // eslint-disable-next-line react-hooks/exhaustive-deps
- },[signature,mapped,sdk,provider,overrides]);
+ },[signature,mapped,sdk,provider,overrides,selected]);
  useEffect(()=>{
   const changed=routeFix.current!==currentKey,previousRoute=!!routeText||routing;
   routeFix.current=currentKey;routeGeneration.current++;setRouting(false);

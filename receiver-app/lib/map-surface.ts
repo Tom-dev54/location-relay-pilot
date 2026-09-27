@@ -2,10 +2,10 @@ import {loadAMap,converted,addressFor,type AMapSDK} from './amap-browser';
 import {describePlace,type Place} from './place-description';
 import {api} from './client';
 import {mapRegion,type MapProvider,type MapPoint} from './map-region';
+import {mapMarker,type MarkerPoint} from './map-marker';
 import {preloadWorldAssets} from './world-map-assets';
 export type Mapped={coordinates?:[number,number];place?:Place;error?:string};
 export type BaseState={status:'loading'|'ready'|'error';message:string;visible?:boolean};
-type MarkerPoint={id:string;coordinates:[number,number];title:string};
 export type MapSurface={markers:(points:MarkerPoint[],select:(id:string)=>void)=>void;focus:(p:[number,number],radius:number)=>void;route:(start:MapPoint,end:[number,number])=>Promise<{distance:number;time:number}>;clearRoute:()=>void;destroy:()=>void};
 export async function lookupPlace(provider:MapProvider,p:MapPoint):Promise<Mapped>{
  let coordinates:[number,number]|undefined;
@@ -30,7 +30,7 @@ export async function createMapSurface(provider:MapProvider,el:HTMLElement,state
   map.on?.('error',()=>{if(!dead)state({status:'error',message:'高德底图加载失败，请检查网络或切换地图'});});
   map.addControl(new A.Scale());map.addControl(new A.ToolBar());
   return {
-   markers(items,select){if(dead)return;points.forEach(m=>m.setMap(null));points=items.map(p=>{const marker=new A.Marker({position:p.coordinates,title:p.title,map});marker.on('click',()=>select(p.id));return marker;});},
+   markers(items,select){if(dead)return;points.forEach(m=>m.setMap(null));points=items.map(p=>{return new A.Marker({position:p.coordinates,title:p.title,content:mapMarker(p,select),anchor:'bottom-center',offset:new A.Pixel(0,0),zIndex:p.selected?300:100,map});});},
    focus(p,radius){if(dead)return;circle?.setMap(null);circle=new A.Circle({center:p,radius:Math.min(radius,20000000),strokeColor:'#1975e8',strokeOpacity:.5,fillColor:'#4a96ff',fillOpacity:.15,map});map.setFitView([circle],false,[45,45,45,45],17);},
    async route(start,end){
     if(mapRegion(start).provider!=='amap')throw Error('起点在大陆以外，请选择海外地图或使用外部导航核对跨境路线');
@@ -61,7 +61,7 @@ export async function createMapSurface(provider:MapProvider,el:HTMLElement,state
  begin();tiles.addTo(map);
  let routeEpoch=0;
  return {
-  markers(items,select){if(dead)return;layer.clearLayers();for(const p of items){const title=document.createElement('span');title.textContent=p.title;L.circleMarker([p.coordinates[1],p.coordinates[0]],{radius:8,color:'#fff',weight:3,fillColor:'#1165d9',fillOpacity:1}).addTo(layer).bindTooltip(title).on('click',()=>select(p.id));}},
+  markers(items,select){if(dead)return;layer.clearLayers();for(const p of items){const icon=L.divIcon({html:mapMarker(p,select),className:'relay-marker-wrapper',iconSize:[44,50],iconAnchor:[22,50]});L.marker([p.coordinates[1],p.coordinates[0]],{icon,keyboard:false,zIndexOffset:p.selected?300:0}).addTo(layer);}},
   focus(p,radius){if(dead)return;circle?.remove();const center:L.LatLngExpression=[p[1],p[0]];circle=L.circle(center,{radius:Math.min(radius,20000000),color:'#1975e8',weight:2,fillOpacity:.15}).addTo(map);map.fitBounds(circle.getBounds(),{padding:[45,45],maxZoom:17});},
   async route(start,end){
    if(start.crs!=='WGS84')throw Error('当前位置坐标系不适用于海外地图');

@@ -4,6 +4,7 @@ import type {GeoJSONSource,Map as VectorMap,Marker} from 'maplibre-gl';
 import type {Feature,Polygon} from 'geojson';
 import {worldStyle} from './world-map-style';
 import {bundledGlyphRanges} from './world-map-assets';
+import {mapMarker} from './map-marker';
 import {api} from './client';
 import {warmApproach} from './world-map-prefetch';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -81,7 +82,7 @@ export async function createWorldVector(el:HTMLElement,state:(s:BaseState)=>void
   },reducedMotion?0:intro?1200:700);
  }
  return {
-  markers(items,select){if(dead)return;points.splice(0).forEach(m=>m.remove());for(const p of items){const button=document.createElement('button');button.type='button';button.className='world-point';button.title=p.title;button.setAttribute('aria-label',p.title);button.onclick=()=>select(p.id);points.push(new M.Marker({element:button}).setLngLat(p.coordinates).addTo(map));}},
+  markers(items,select){if(dead)return;points.splice(0).forEach(m=>m.remove());for(const p of items){const button=mapMarker(p,select);points.push(new M.Marker({element:button,anchor:'bottom'}).setLngLat(p.coordinates).addTo(map));}},
   focus(p,radius){
    if(dead)return;pendingCircle=accuracyCircle(p,radius);pendingBounds=new M.LngLatBounds();
    pendingCircle.geometry.coordinates[0].forEach(c=>pendingBounds!.extend([c[0],c[1]]));lastError='';

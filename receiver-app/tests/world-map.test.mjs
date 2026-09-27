@@ -9,7 +9,7 @@ import {worldMap} from '../lib/world-map-server.ts';
 import {openWorldTileCache} from '../lib/world-map-cache.ts';
 import {worldResource} from '../lib/world-map-resources.ts';
 import {worldStyle,bilingualName,labelExpression} from '../lib/world-map-style.ts';
-import {createExpression} from '@maplibre/maplibre-gl-style-spec';
+import {createExpression,validateStyleMin} from '@maplibre/maplibre-gl-style-spec';
 const p=(lat,lon,crs='WGS84')=>({lat,lon,crs,accuracy:17});
 test('按坐标选择国内外地图，泰国不会落入粗略矩形内的大陆转换',()=>{
  for(const a of [p(22.60255,110.154308),p(39.9042,116.4074),p(31.2304,121.4737),p(18.2528,109.5119)])assert.equal(mapRegion(a).provider,'amap');
@@ -152,4 +152,13 @@ test('新中文显示名不改变相对位置、粗精度处理或原始地址',
  const raw={results:[{...nearby.results[0],name:'Krispy Kreme'}]},point=p(13.75,100.5);
  const result=worldPlace(raw,point,17);assert.match(result.title,/克里斯皮奶油甜甜圈† · Krispy Kreme附近/);assert.match(result.relative,/东侧约40米/);assert.equal(result.address,'Test building, Bangkok');
  assert.doesNotMatch(worldPlace(raw,point,300).title,/Krispy/);
+});
+
+test('完整地图样式有效，街道提前显示且建筑和门牌仅使用真实数据层',()=>{
+ const style=worldStyle('https://test.invalid');assert.deepEqual(validateStyleMin(style).map(e=>e.message),[]);
+ assert.equal(style.layers.find(l=>l.id==='highway-name-minor').minzoom,13.5);
+ assert.equal(style.layers.find(l=>l.id==='poi-level-2').minzoom,14);
+ assert.equal(style.layers.find(l=>l.id==='relay-house-numbers')['source-layer'],'housenumber');
+ const road=createExpression(labelExpression('transportation_name'),'layers[0].layout.text-field');
+ assert.equal(road.result,'success');assert.equal(road.value.evaluate({zoom:14},{type:2,properties:{name:'原文路名','name:en':'Example Road',class:'minor'}}),'Example Road');
 });
