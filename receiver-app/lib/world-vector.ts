@@ -45,7 +45,7 @@ export async function createWorldVector(el:HTMLElement,state:(s:BaseState)=>void
  const emit=(s:BaseState)=>state({...s,visible:loaded});
  const busy=()=>{if(dead)return;emit({status:'loading',message:'地图加载中…'});clearTimeout(timer);timer=setTimeout(()=>{if(!dead)emit({status:'error',message:lastError||'地图加载较慢，请重试或使用下方高德导航'});},18000);};
  map.on('dataloading',busy);
- map.on('error',event=>{if(!dead){lastError=(event.error as Error&{status?:number}).status===429?'地图查询已达测试上限，可使用下方高德导航':'部分地图内容未加载成功，请重新加载；也可直接使用高德导航';emit({status:'error',message:lastError});}});
+ map.on('error',event=>{if((event as unknown as {sourceId?:string}).sourceId?.startsWith('relay-overture-'))return;if(!dead){lastError=(event.error as Error&{status?:number}).status===429?'地图查询已达测试上限，可使用下方高德导航':'部分地图内容未加载成功，请重新加载；也可直接使用高德导航';emit({status:'error',message:lastError});}});
  map.on('idle',()=>{if(dead)return;clearTimeout(timer);if(lastError){emit({status:'error',message:lastError});return;}if(introPending){el.dataset.motion='overview';emit({status:'loading',message:'地图加载中…'});return;}el.dataset.motion='ready';if(map.isStyleLoaded()&&map.areTilesLoaded())emit({status:'ready',message:''});});
  map.on('load',()=>{
   if(dead)return;loaded=true;

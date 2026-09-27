@@ -17,6 +17,7 @@ export const referenceNames:Record<string,string>={
 };
 // These are category descriptions, not invented Chinese business/place names.
 export const categoryNames:Record<string,string>={
+ place:'地点',historic:'历史地点',car_repair:'汽车服务',beauty:'美容美发',hardware:'五金家居',office:'服务机构',fitness:'健身健康',pet:'宠物服务',car_parts:'汽车配件',electronics:'电子用品',industrial:'生产企业',bar:'酒吧',
  cafe:'咖啡店',restaurant:'餐厅',fast_food:'快餐店',food_court:'美食广场',shop:'商铺',jewelry:'珠宝店',
  clothing_store:'服装店',clothes:'服装店',sports:'运动用品店',bakery:'烘焙店',convenience:'便利店',supermarket:'超市',
  lodging:'住宿',hotel:'酒店',hostel:'旅舍',atm:'取款机',bank:'银行',pharmacy:'药店',hospital:'医院',clinic:'诊所',dentist:'牙科',

@@ -57,6 +57,15 @@ export function worldStyle(origin:string):StyleSpecification{
   if(typeof layer.layout['text-size']==='number')layer.layout['text-size']=Math.max(13,layer.layout['text-size']);
   layer.paint={...layer.paint,'text-halo-color':'#fff','text-halo-width':1.4};
  }
+ // Open building footprints and places supplement gaps in the OSM basemap.
+ // No country-scale requests: z14 tiles are loaded only at neighborhood scale.
+ const attribution='© <a href="https://docs.overturemaps.org/attribution/" target="_blank" rel="noopener noreferrer">Overture Maps</a>';
+ for(const theme of ['buildings','places'])style.sources['relay-overture-'+theme]={type:'vector',tiles:[origin+'/api/world-map/overture/'+theme+'/14/{x}/{y}'],minzoom:14,maxzoom:14,attribution};
+ const buildingIndex=style.layers.findIndex(l=>l.id==='building');
+ style.layers.splice(Math.max(0,buildingIndex),0,{id:'relay-overture-buildings-fill',type:'fill',source:'relay-overture-buildings','source-layer':'building',minzoom:14,paint:{'fill-color':'#dedad4','fill-outline-color':'#b8b1a8','fill-opacity':['interpolate',['linear'],['zoom'],14,.7,16,.95]}});
+ for(const rank of [1,2,3])style.layers.push({id:'relay-overture-places-'+rank,type:'symbol',source:'relay-overture-places','source-layer':'place',minzoom:rank===1?14:rank===2?15:16,
+  filter:['==',['get','rank'],rank],layout:{'text-field':labelExpression('poi'),'text-font':['Noto Sans Regular'],'text-size':13,'text-max-width':8,'text-anchor':'top','text-offset':[0,.6],'text-padding':5,'text-optional':false,'icon-optional':true,'icon-size':.85,'icon-image':['let','sprite',['concat',['get','icon'],'_11'],['case',['in',['var','sprite'],['literal',spriteNames]],['var','sprite'],'circle_stroked_11']],'symbol-sort-key':['-',1,['get','confidence']]},
+  paint:{'text-color':'#405872','text-halo-color':'#fff','text-halo-width':1.5}});
  // House numbers are real features from the provider; never infer missing addresses.
  style.layers.push({id:'relay-house-numbers',type:'symbol',source:'default','source-layer':'housenumber',minzoom:17,layout:{'text-field':['to-string',['get','housenumber']],'text-font':['Noto Sans Regular'],'text-size':12,'text-padding':2},paint:{'text-color':'#685f56','text-halo-color':'#fff','text-halo-width':1.2}});
  return style;

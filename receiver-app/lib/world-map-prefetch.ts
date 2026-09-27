@@ -16,6 +16,10 @@ export function approachTiles(lon:number,lat:number):string[]{
 }
 export async function warmApproach(lon:number,lat:number,signal:AbortSignal):Promise<void>{
  const queue=approachTiles(lon,lat),controller=new AbortController(),combined=controller.signal;
+ // Warm only the destination detail tile concurrently; never delay the one-second
+ // camera transition while extra footprints/places arrive.
+ const n=16384,x=Math.min(n-1,Math.floor((lon+180)/360*n)),y=Math.min(n-1,Math.max(0,Math.floor((1-Math.asinh(Math.tan(Math.max(-85.05112878,Math.min(85.05112878,lat))*Math.PI/180))/Math.PI)/2*n)));
+ if(queue.length&&!signal.aborted)for(const theme of ['buildings','places'])void fetch(`/api/world-map/overture/${theme}/14/${x}/${y}`,{signal,cache:'force-cache'}).then(async r=>{if(r.ok)await r.arrayBuffer();else await r.body?.cancel();}).catch(()=>{});
  const abort=()=>controller.abort(),timer=setTimeout(abort,6000);
  signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
  try{await Promise.all(Array.from({length:3},async()=>{

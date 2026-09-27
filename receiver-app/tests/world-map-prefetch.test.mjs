@@ -12,7 +12,7 @@ test('离开地图会取消预取，预取失败不会破坏地图本身',async(
  try{
   globalThis.fetch=async(url,options)=>{active++;peak=Math.max(peak,active);count++;assert.equal(options.cache,'force-cache');
    await new Promise(resolve=>{options.signal.addEventListener('abort',resolve,{once:true});setTimeout(()=>c.abort(),10);});active--;throw new Error('cancelled');};
-  await warmApproach(100.5,13.75,c.signal);assert.ok(peak<=3&&count<=3);assert.equal(active,0);
+  await warmApproach(100.5,13.75,c.signal);assert.ok(peak<=5&&count<=5);assert.equal(active,0);
   globalThis.fetch=async()=>new Response('quota',{status:429});await assert.doesNotReject(warmApproach(100.49,13.9,new AbortController().signal));
  }finally{globalThis.fetch=original;}
 });
