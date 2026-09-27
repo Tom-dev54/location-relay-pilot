@@ -60,7 +60,7 @@ export function worldStyle(origin:string):StyleSpecification{
  // Open building footprints and places supplement gaps in the OSM basemap.
  // No country-scale requests: z14 tiles are loaded only at neighborhood scale.
  const attribution='© <a href="https://docs.overturemaps.org/attribution/" target="_blank" rel="noopener noreferrer">Overture Maps</a>';
- for(const theme of ['buildings','places'])style.sources['relay-overture-'+theme]={type:'vector',tiles:[origin+'/api/world-map/overture/'+theme+'/14/{x}/{y}'],minzoom:14,maxzoom:14,attribution};
+ for(const theme of ['buildings','places'])style.sources['relay-overture-'+theme]={type:'vector',tiles:[origin+'/api/world-map/overture/v2/'+theme+'/14/{x}/{y}'],minzoom:14,maxzoom:14,attribution};
  const buildingIndex=style.layers.findIndex(l=>l.id==='building');
  style.layers.splice(Math.max(0,buildingIndex),0,{id:'relay-overture-buildings-fill',type:'fill',source:'relay-overture-buildings','source-layer':'building',minzoom:14,paint:{'fill-color':'#dedad4','fill-outline-color':'#b8b1a8','fill-opacity':['interpolate',['linear'],['zoom'],14,.7,16,.95]}});
  for(const rank of [1,2,3])style.layers.push({id:'relay-overture-places-'+rank,type:'symbol',source:'relay-overture-places','source-layer':'place',minzoom:rank===1?14:rank===2?15:16,

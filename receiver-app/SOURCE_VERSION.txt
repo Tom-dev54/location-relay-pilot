@@ -1,4 +1,4 @@
-Sites version: 23
-Source commit: e88a0f3a74a1d39a31d6160c678f9f6de39fd00c
+Sites version: 24
+Source commit: d33509bfb15ae2232213d37981f2d605d7128194
 Production: https://location-relay-receive.beanlittlehey.chatgpt.site/
 Runtime source matches the deployed source. Private-data diagnostic scripts are omitted.

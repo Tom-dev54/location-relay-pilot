@@ -6,10 +6,12 @@ import {worldStyle} from './world-map-style';
 import {bundledGlyphRanges} from './world-map-assets';
 import {mapMarker} from './map-marker';
 import {api} from './client';
+import {WorldTileLoader,nearbyTilePaths} from './world-tile-loader';
 import {warmApproach} from './world-map-prefetch';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import * as M from 'maplibre-gl';
 
+let nextProtocol=0;
 function accuracyCircle(p:[number,number],radius:number):Feature<Polygon>{
  const angle=Math.min(Math.max(radius,1),20000000)/6371008.8,lat=p[1]*Math.PI/180,lon=p[0]*Math.PI/180;
  const coordinates=Array.from({length:65},(_,i)=>{const bearing=i/64*Math.PI*2,y=Math.asin(Math.sin(lat)*Math.cos(angle)+Math.cos(lat)*Math.sin(angle)*Math.cos(bearing)),x=lon+Math.atan2(Math.sin(bearing)*Math.sin(angle)*Math.cos(lat),Math.cos(angle)-Math.sin(lat)*Math.sin(y));return[x*180/Math.PI,y*180/Math.PI];});
@@ -19,14 +21,18 @@ export async function createWorldVector(el:HTMLElement,state:(s:BaseState)=>void
  M.setWorkerUrl(workerUrl);
  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const countryZoom=4+Math.log2(Math.max(256,Math.min(el.clientWidth,el.clientHeight))/390);
+ const tiles=new WorldTileLoader(),protocol='relaytiles'+(++nextProtocol);
+ M.addProtocol(protocol,async(params,controller)=>({data:await tiles.get(params.url.slice(protocol.length+3),controller.signal),cacheControl:'public, max-age=86400'}));
+ const tileUrl=(path:string)=>location.origin+path;
  let map:VectorMap;
- try{map=new M.Map({container:el,style:worldStyle(location.origin),center:initial?[initial.lon,initial.lat]:[100,15],zoom:initial?(reducedMotion?16:countryZoom):4,maxZoom:20,attributionControl:{compact:true},localIdeographFontFamily:'sans-serif',pixelRatio:Math.min(devicePixelRatio||1,3),maxTileCacheSize:64,fadeDuration:reducedMotion?0:200,renderWorldCopies:false,
+ try{map=new M.Map({container:el,style:worldStyle(location.origin),center:initial?[initial.lon,initial.lat]:[100,15],zoom:initial?(reducedMotion?16:countryZoom):4,maxZoom:20,attributionControl:{compact:true},localIdeographFontFamily:'sans-serif',pixelRatio:Math.min(devicePixelRatio||1,3),maxTileCacheSize:128,cancelPendingTileRequestsWhileZooming:false,fadeDuration:reducedMotion?0:200,renderWorldCopies:false,
   transformRequest(url,type){
+   if(type==='Tile'&&url.startsWith(location.origin+'/api/world-map/'))return {url:protocol+'://'+url};
    // Stable icons and common Latin/Thai glyphs ship with the app; uncommon scripts use the bounded proxy.
    if(type==='Glyphs'){const part=decodeURIComponent(url).split('/api/world-map/fonts/Noto Sans Regular/')[1];if(part&&bundledGlyphRanges.includes(part.replace(/\.pbf$/,'')))return {url:location.origin+'/api/map-assets/v3/noto-regular-'+part};}
    return {url};
   }});}
- catch{el.replaceChildren();throw Error('当前浏览器不能显示高清地图');}
+ catch{tiles.destroy();M.removeProtocol(protocol);el.replaceChildren();throw Error('当前浏览器不能显示高清地图');}
  el.dataset.renderer='vector';el.dataset.motion='loading';
  map.addControl(new M.NavigationControl({showCompass:false}),'top-left');map.addControl(new M.ScaleControl({unit:'metric'}));
  const points:Marker[]=[],empty={type:'FeatureCollection' as const,features:[]};
@@ -47,6 +53,17 @@ export async function createWorldVector(el:HTMLElement,state:(s:BaseState)=>void
  map.on('dataloading',busy);
  map.on('error',event=>{if((event as unknown as {sourceId?:string}).sourceId?.startsWith('relay-overture-'))return;if(!dead){lastError=(event.error as Error&{status?:number}).status===429?'地图查询已达测试上限，可使用下方高德导航':'部分地图内容未加载成功，请重新加载；也可直接使用高德导航';emit({status:'error',message:lastError});}});
  map.on('idle',()=>{if(dead)return;clearTimeout(timer);if(lastError){emit({status:'error',message:lastError});return;}if(introPending){el.dataset.motion='overview';emit({status:'loading',message:'地图加载中…'});return;}el.dataset.motion='ready';if(map.isStyleLoaded()&&map.areTilesLoaded())emit({status:'ready',message:''});});
+ let neighborTimer:ReturnType<typeof setTimeout>|undefined;
+ map.on('movestart',()=>{clearTimeout(neighborTimer);tiles.cancelWarmup();});
+ map.on('moveend',()=>{
+  clearTimeout(neighborTimer);neighborTimer=setTimeout(()=>{
+   if(dead||introPending||introLocked||map.isMoving())return;
+   const b=map.getBounds();
+   for(const path of nearbyTilePaths(b.getWest(),b.getSouth(),b.getEast(),b.getNorth(),map.getZoom())){
+    const url=tileUrl(path);if(!tiles.has(url))void tiles.get(url,undefined,true).catch(()=>{});
+   }
+  },350);
+ });
  map.on('load',()=>{
   if(dead)return;loaded=true;
   map.addSource('relay-accuracy',{type:'geojson',data:pendingCircle||empty});
@@ -88,7 +105,7 @@ export async function createWorldVector(el:HTMLElement,state:(s:BaseState)=>void
    pendingCircle.geometry.coordinates[0].forEach(c=>pendingBounds!.extend([c[0],c[1]]));lastError='';
    if(loaded){source('relay-accuracy')?.setData(pendingCircle);if(introPending)startIntro();else{cancelIntro();approach(pendingBounds,16);}}
    else{
-    warmController.abort();warmController=new AbortController();warming=reducedMotion?Promise.resolve():warmApproach(p[0],p[1],warmController.signal);
+    warmController.abort();warmController=new AbortController();warming=reducedMotion?Promise.resolve():warmApproach(p[0],p[1],warmController.signal,(path,signal)=>tiles.get(tileUrl(path),signal));
     const camera=map.cameraForBounds(pendingBounds,{padding:45,maxZoom:16});map.jumpTo({center:p,zoom:reducedMotion?(camera?.zoom??16):Math.min(countryZoom,camera?.zoom??16)});
    }
   },
@@ -102,6 +119,6 @@ export async function createWorldVector(el:HTMLElement,state:(s:BaseState)=>void
    const bounds=new M.LngLatBounds();data.lines.flat().forEach(c=>bounds.extend(c));lastError='';approach(bounds,17);return data;
   },
   clearRoute(){epoch++;if(!dead&&loaded)source('relay-route')?.setData(empty);},
-  destroy(){dead=true;epoch++;cancelIntro();clearTimeout(timer);resize.disconnect();points.forEach(m=>m.remove());map.remove();},
+  destroy(){dead=true;epoch++;cancelIntro();clearTimeout(timer);clearTimeout(neighborTimer);tiles.destroy();resize.disconnect();points.forEach(m=>m.remove());map.remove();M.removeProtocol(protocol);},
  };
 }

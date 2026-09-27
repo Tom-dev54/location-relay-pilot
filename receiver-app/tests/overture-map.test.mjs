@@ -41,8 +41,14 @@ test('No-data tiles are valid empty protobuf; errors not cached and retry succee
  const retry=await overtureMap(req(path),path,broken,async()=>tile('place',[point(props)]));assert.equal(retry.status,200);
 });
 
-test('Release discovery accepts only official dated catalogs and reuses one hourly result',async()=>{
- const bad=await overtureRelease(async()=>Response.json({links:[{rel:'child',latest:true,href:'https://evil.invalid/2026-09-23.1/catalog.json'}]}));assert.equal(bad,OVERTURE_RELEASE);
+test('Release discovery accepts only official dated catalogs and reuses one hourly result',async(t)=>{
+ t.mock.timers.enable({apis:['Date'],now:Date.now()});
+ const bad=await overtureRelease(async()=>Response.json({links:[{rel:'child',latest:true,href:'https://evil.invalid/2026-09-23.1/catalog.json'}]}));assert.equal(bad,OVERTURE_RELEASE);t.mock.timers.tick(60001);
  let count=0;const fetcher=async(url,opts)=>{count++;assert.equal(url,'https://stac.overturemaps.org/catalog.json');assert.match(opts.headers['User-Agent'],/LocationRelay/);return Response.json({links:[{rel:'child',latest:true,href:'https://stac.overturemaps.org/2026-09-23.1/catalog.json'}]});};
  assert.equal(await overtureRelease(fetcher),OVERTURE_RELEASE);assert.equal(await overtureRelease(fetcher),OVERTURE_RELEASE);assert.equal(count,1);
+});
+
+test('Overture taxonomy and region-specific Chinese name keys join bilingual display',()=>{
+ const d=overturePlaceProperties({...props,names:JSON.stringify({primary:'Smile Theory Dental Clinic',common:{'zh-CN':'微笑理论牙科诊所'}}),basic_category:'dental_clinic'});assert.equal(d.class,'dentist');assert.equal(d['name:zh'],'微笑理论牙科诊所');
+ const fallback=overturePlaceProperties({...props,basic_category:'new_unmapped_subcategory',taxonomy:JSON.stringify({hierarchy:['food_and_drink','restaurant']})});assert.equal(fallback.class,'restaurant');
 });

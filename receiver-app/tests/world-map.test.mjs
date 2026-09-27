@@ -136,6 +136,8 @@ test('双语名称优先原有中文，补充参考译名且保留原名',()=>{
  assert.equal(evaluate({name:'Subway',class:'railway'}),'铁路车站\nSubway');
  assert.equal(evaluate({name:'Mapas',class:'shop'}),'商铺\nMapas');
  assert.equal(evaluate({name:'BNE',class:'shop',subclass:'jewelry'}),'珠宝店\nBNE');
+ assert.equal(evaluate({name:'Smile Theory Dental Clinic',class:'dentist'}),'微笑理论牙科诊所†\nSmile Theory Dental Clinic');
+ assert.equal(evaluate({name:'ร้านทดสอบ',class:'laundry'}),'洗衣店\nร้านทดสอบ');
  assert.equal(evaluate({name:'Adidas',class:'shop'}),'阿迪达斯\nAdidas');
  assert.equal(evaluate({name:'ถนนเชิดวุฒากาศ','name:en':'Choet Wutthakat Rd.'}),'乔特武他卡路†\nChoet Wutthakat Rd.');
  assert.equal(evaluate({name:'ชื่อทดสอบ','name:latin':'Test'}),'Test\nชื่อทดสอบ');
